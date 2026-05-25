@@ -1,26 +1,144 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #050505;
+  --foreground: #eceff4;
+  --neon-green: #A3FF12;
+  --neon-glow: rgba(163, 255, 18, 0.15);
+  --neon-dim: rgba(163, 255, 18, 0.3);
+  --border-neon: rgba(163, 255, 18, 0.1);
+  --border-neon-active: rgba(163, 255, 18, 0.4);
+  --card-bg: rgba(10, 10, 10, 0.75);
 }
 
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-neon-green: var(--neon-green);
+  --color-neon-glow: var(--neon-glow);
+  --color-neon-dim: var(--neon-dim);
+  --color-border-neon: var(--border-neon);
+  --color-border-neon-active: var(--border-neon-active);
+  --color-card-bg: var(--card-bg);
+  
+  --font-sans: var(--font-geist-sans), Inter, sans-serif;
+  --font-mono: var(--font-geist-mono), "JetBrains Mono", monospace;
+  
+  --animate-scanline: scanline 8s linear infinite;
+  --animate-blink: blink 1s step-end infinite;
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
   }
 }
 
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Base resets & styled defaults */
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Custom hacker scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050505;
+  border-left: 1px solid rgba(163, 255, 18, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(163, 255, 18, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(163, 255, 18, 0.5);
+  box-shadow: 0 0 10px rgba(163, 255, 18, 0.3);
+}
+
+/* Custom glowing and utility effects */
+.neon-border {
+  border: 1px solid var(--border-neon);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5), inset 0 0 5px rgba(163, 255, 18, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.neon-border:hover {
+  border-color: var(--border-neon-active);
+  box-shadow: 0 0 20px rgba(163, 255, 18, 0.08), inset 0 0 8px rgba(163, 255, 18, 0.04);
+}
+
+.neon-text-glow {
+  text-shadow: 0 0 10px rgba(163, 255, 18, 0.4), 0 0 2px rgba(163, 255, 18, 0.8);
+}
+
+.neon-text-glow-dim {
+  text-shadow: 0 0 8px rgba(163, 255, 18, 0.2);
+}
+
+.neon-bg-glow {
+  box-shadow: 0 0 30px rgba(163, 255, 18, 0.15);
+}
+
+/* Cyberpunk scanlines overlay */
+.cyber-scanlines {
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-scanlines::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 10;
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+}
+
+/* Cyber grid background */
+.cyber-grid {
+  background-image: 
+    linear-gradient(rgba(163, 255, 18, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(163, 255, 18, 0.015) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: center;
+}
+
+.cyber-grid-dense {
+  background-image: 
+    linear-gradient(rgba(163, 255, 18, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(163, 255, 18, 0.025) 1px, transparent 1px);
+  background-size: 12px 12px;
+  background-position: center;
+}
+
+/* Digital terminal input styles */
+.terminal-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-mono);
+  color: var(--neon-green);
 }

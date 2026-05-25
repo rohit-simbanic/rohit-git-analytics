@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cyberpunk Developer Analytics Dashboard
 
-## Getting Started
+A modern, retro-futuristic developer analytics dashboard inspired by GitHub activity trackers, release monitors (like `release.bar`), and hacker-style SaaS platforms. 
 
-First, run the development server:
+Built using **Next.js 15 (App Router)**, **TypeScript**, **Tailwind CSS**, **Framer Motion**, **Zustand**, and **Recharts**.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## ⚡ Core Features
+
+* **📡 Live GitHub API Integration**: Queries public profiles, repository configurations, topics, languages, and user activity events in real-time.
+* **🔒 Dual Authentication Gate**: Supports logging in securely via **GitHub OAuth** or bypassing the lock gate using **Stub Credentials** (Hacker ID: `steipete`, Key: `hacker-core`).
+* **🌧 Canvas Matrix Rain Backdrop**: An interactive digital rain background rendered on HTML5 canvas on the login gate terminal, complete with progress bar decoding metrics.
+* **🌐 Dynamic Sharing Routes (`/dashboard/[username]`)**: Share your custom dashboard analytics page with anyone. Guests will see your public profile stats directly.
+* **🎛 Public Showcase Configurator**: If logged in, a toggle switch (`set as showcase`) becomes visible. Activating it saves your handle in a server-side JSON file, making your profile the default landing dashboard for unauthenticated visitors.
+* **🛡 Trust Score Radar**: Custom SVG gauge calculating a developer "Trust Score" dynamically based on follower density, commit frequency, and open issue ratios.
+* **📊 Data-Heavy Visual Charts**:
+  * **Contribution Matrix**: Grid calendar tracking git commits.
+  * **Commit Flux Calculus**: Recharts Area Chart displaying push volumes.
+  * **Compiler Distribution**: Recharts Pie Chart calculating language percentages.
+* **⌨ bottom CLI Terminal**: An interactive collapsible terminal shell. Input commands like `help`, `sysinfo`, `stats`, `about`, `clear`, or **`hack`** (simulates an override that passes all failing CI checks, adds commits, and boosts your Trust Score to 99 in real-time).
+
+---
+
+## ⚙ Setup Guide
+
+### 1. Register GitHub OAuth Application
+To log in with your GitHub account, you need to register an OAuth application on GitHub:
+1. Go to your **[GitHub Settings -> Developer Settings -> OAuth Apps](https://github.com/settings/developers)**.
+2. Click **New OAuth App**.
+3. Fill in the fields:
+   * **Application Name:** `Developer Terminal Dashboard`
+   * **Homepage URL:** `http://localhost:3000`
+   * **Authorization callback URL:** `http://localhost:3000/api/auth/callback/github`
+4. Click **Register Application**.
+5. Copy the **Client ID** (`GITHUB_ID`).
+6. Click **Generate a new client secret** and copy it (`GITHUB_SECRET`).
+
+### 2. Environment Configurations
+Create a `.env` file in the root directory and copy the contents from `.env.example`:
+```env
+# NextAuth settings
+NEXTAUTH_SECRET=f7e3c1b9a87d6e5d4c3b2a1a2b3c4d5e
+NEXTAUTH_URL=http://localhost:3000
+
+# GitHub OAuth credentials
+GITHUB_ID=your_github_client_id
+GITHUB_SECRET=your_github_client_secret
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Install & Start Server
+Run the following commands in your terminal to download dependencies and boot the development server:
+```bash
+# Install dependencies
+npm install
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# Build verification check
+npm run build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Start local server
+npm run dev
+```
+Open **[http://localhost:3000](http://localhost:3000)** in your browser to view the application.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🕹 Usage Guide
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Gate Decryption**: Click **Sign In with GitHub** to log in with OAuth, or click **Inject Demo Session** to bypass using the credentials gate.
+2. **Search public profiles**: In the repository list search input, type `@username` (e.g. `@torvalds`) and press `Enter` to resolve any public GitHub user's analytics instantly.
+3. **Trigger Showcase**: If you are logged in and viewing your own profile, toggle **`[set as showcase]`** at the bottom of the statistics card. Toggling it `active` redirects any guest visitor accessing `/` or `/dashboard` directly to your profile.
+4. **Interactive CLI**: Click the bottom shell bar to expand the CLI. Type `help` to list commands, or type `hack` to run the payload override.
