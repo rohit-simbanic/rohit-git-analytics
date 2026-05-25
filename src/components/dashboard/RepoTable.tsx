@@ -2,14 +2,16 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useDashboardStore } from "@/store/useDashboardStore";
-import { Play, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
+import { Play, CheckCircle2, XCircle, RefreshCw, LayoutGrid, FolderCode } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { SourceExplorer } from "@/components/dashboard/SourceExplorer";
 
 export const RepoTable: React.FC = () => {
   const router = useRouter();
   const { 
-    repos, 
+    repos,
+    profile,
     searchQuery, 
     setSearchQuery, 
     activeFilter, 
@@ -18,8 +20,13 @@ export const RepoTable: React.FC = () => {
     addTerminalCommand 
   } = useDashboardStore();
 
+  // Parse clean owner handle (strip leading '@')
+  const ownerHandle = profile.handle.replace(/^@/, "").toLowerCase();
+
   const [expandedRepo, setExpandedRepo] = useState<string | null>(null);
   const [recheckingRepo, setRecheckingRepo] = useState<string | null>(null);
+  // Track active panel tab per repo: 'metrics' | 'explorer'
+  const [repoTab, setRepoTab] = useState<Record<string, "metrics" | "explorer">>({});
   const recheckTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Cleanup timeout on unmount to prevent memory leaks
@@ -76,6 +83,14 @@ export const RepoTable: React.FC = () => {
 
   const toggleRow = (repoName: string) => {
     setExpandedRepo(expandedRepo === repoName ? null : repoName);
+    // Default to metrics tab on first expand
+    if (!repoTab[repoName]) {
+      setRepoTab((prev) => ({ ...prev, [repoName]: "metrics" }));
+    }
+  };
+
+  const setTab = (repoName: string, tab: "metrics" | "explorer") => {
+    setRepoTab((prev) => ({ ...prev, [repoName]: tab }));
   };
 
   // Filter & Search logic
@@ -278,7 +293,7 @@ export const RepoTable: React.FC = () => {
 
                       </tr>
 
-                      {/* Expanded row actions & git history logs */}
+                      {/* Expanded row — tabbed panel */}
                       <AnimatePresence>
                         {isExpanded && (
                           <tr className="bg-black/35 border-l-2 border-neon-green/70">
@@ -287,61 +302,110 @@ export const RepoTable: React.FC = () => {
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: "auto" }}
                                 exit={{ opacity: 0, height: 0 }}
-                                className="px-5 py-4 font-mono text-xs border-t border-neon-green/5 space-y-3.5"
-                              >                                 <div className="flex items-center justify-between">
-                                  <span className="text-[10px] text-neutral-400 uppercase tracking-widest font-semibold">{"// REPO_OPERATIONS:"} {repo.name}</span>
-                                  <span className="text-[9px] text-neutral-600">ID: SHA256-REGISTRY-{repo.name.toUpperCase().replace("/", "-")}</span>
+                                className="font-mono text-xs border-t border-neon-green/5"
+                              >
+                                {/* ── Tab Bar ─────────────────────── */}
+                                <div className="flex items-center gap-0 border-b border-neon-green/8 px-5 pt-3">
+                                  <button
+                                    onClick={() => setTab(repo.name, "metrics")}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                                      (repoTab[repo.name] ?? "metrics") === "metrics"
+                                        ? "border-neon-green text-neon-green"
+                                        : "border-transparent text-neutral-600 hover:text-neutral-300"
+                                    }`}
+                                  >
+                                    <LayoutGrid className="w-3 h-3" />
+                                    System Metrics
+                                  </button>
+                                  <button
+                                    onClick={() => setTab(repo.name, "explorer")}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
+                                      repoTab[repo.name] === "explorer"
+                                        ? "border-neon-green text-neon-green"
+                                        : "border-transparent text-neutral-600 hover:text-neutral-300"
+                                    }`}
+                                  >
+                                    <FolderCode className="w-3 h-3" />
+                                    Source Explorer
+                                  </button>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  {/* Left Panel: Build Info */}
-                                  <div className="bg-black/60 border border-neon-green/5 rounded-xl p-3.5 space-y-2">
-                                    <div className="text-[10px] text-neutral-500 uppercase tracking-wider">{"// SYSTEM_METRICS"}</div>
-                                    <div className="flex justify-between">
-                                      <span className="text-neutral-500">Security Scans:</span>
-                                      <span className="text-neon-green">0 Vulnerabilities</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-neutral-500">Code Coverage:</span>
-                                      <span className="text-white">96.4%</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-neutral-500">Package Registry:</span>
-                                      <span className="text-white">npm / GitHub Packages</span>
-                                    </div>
-                                  </div>
+                                {/* ── Panel Content ───────────────── */}
+                                <div className="px-5 py-4 space-y-3.5">
 
-                                  {/* Right Panel: Operations Trigger */}
-                                  <div className="bg-black/60 border border-neon-green/5 rounded-xl p-3.5 flex flex-col justify-between items-start gap-4">
-                                    <div>
-                                      <div className="text-[10px] text-neutral-500 uppercase tracking-wider">{"// ACTIONS"}</div>
-                                      <p className="text-[10px] text-neutral-400 mt-1 leading-normal">
-                                        Run cryptographic build validations or refresh repository metadata.
-                                      </p>
-                                    </div>
+                                  {/* METRICS TAB */}
+                                  {(repoTab[repo.name] ?? "metrics") === "metrics" && (
+                                    <>
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-[10px] text-neutral-400 uppercase tracking-widest font-semibold">{"// REPO_OPERATIONS:"} {repo.name}</span>
+                                        <span className="text-[9px] text-neutral-600">ID: SHA256-REGISTRY-{repo.name.toUpperCase().replace("/", "-")}</span>
+                                      </div>
 
-                                    <div className="flex items-center gap-2">
-                                      {repo.ciStatus === "failure" ? (
-                                        <button
-                                          onClick={(e) => handleRecheck(e, repo.name)}
-                                          disabled={recheckingRepo === repo.name}
-                                          className="flex items-center gap-1.5 px-3 py-1.5 bg-red-950/20 border border-red-500/40 hover:border-red-500 text-[10px] text-red-400 uppercase rounded-lg transition-all cursor-pointer font-bold disabled:opacity-50"
-                                        >
-                                          <RefreshCw className={`w-3 h-3 ${recheckingRepo === repo.name ? "animate-spin" : ""}`} />
-                                          {recheckingRepo === repo.name ? "Rechecking..." : "Trigger CI Fix"}
-                                        </button>
-                                      ) : (
-                                        <button
-                                          onClick={(e) => handleRecheck(e, repo.name)}
-                                          disabled={recheckingRepo === repo.name}
-                                          className="flex items-center gap-1.5 px-3 py-1.5 bg-black border border-neon-green/20 hover:border-neon-green text-[10px] text-neon-green uppercase rounded-lg transition-colors cursor-pointer disabled:opacity-50"
-                                        >
-                                          <Play className={`w-3 h-3 ${recheckingRepo === repo.name ? "animate-spin" : ""}`} />
-                                          {recheckingRepo === repo.name ? "Running Build..." : "Run Manual CI Check"}
-                                        </button>
-                                      )}
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Left: Build Info */}
+                                        <div className="bg-black/60 border border-neon-green/5 rounded-xl p-3.5 space-y-2">
+                                          <div className="text-[10px] text-neutral-500 uppercase tracking-wider">{"// SYSTEM_METRICS"}</div>
+                                          <div className="flex justify-between">
+                                            <span className="text-neutral-500">Security Scans:</span>
+                                            <span className="text-neon-green">0 Vulnerabilities</span>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="text-neutral-500">Code Coverage:</span>
+                                            <span className="text-white">96.4%</span>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="text-neutral-500">Package Registry:</span>
+                                            <span className="text-white">npm / GitHub Packages</span>
+                                          </div>
+                                        </div>
+
+                                        {/* Right: Actions */}
+                                        <div className="bg-black/60 border border-neon-green/5 rounded-xl p-3.5 flex flex-col justify-between items-start gap-4">
+                                          <div>
+                                            <div className="text-[10px] text-neutral-500 uppercase tracking-wider">{"// ACTIONS"}</div>
+                                            <p className="text-[10px] text-neutral-400 mt-1 leading-normal">
+                                              Run cryptographic build validations or refresh repository metadata.
+                                            </p>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            {repo.ciStatus === "failure" ? (
+                                              <button
+                                                onClick={(e) => handleRecheck(e, repo.name)}
+                                                disabled={recheckingRepo === repo.name}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-950/20 border border-red-500/40 hover:border-red-500 text-[10px] text-red-400 uppercase rounded-lg transition-all cursor-pointer font-bold disabled:opacity-50"
+                                              >
+                                                <RefreshCw className={`w-3 h-3 ${recheckingRepo === repo.name ? "animate-spin" : ""}`} />
+                                                {recheckingRepo === repo.name ? "Rechecking..." : "Trigger CI Fix"}
+                                              </button>
+                                            ) : (
+                                              <button
+                                                onClick={(e) => handleRecheck(e, repo.name)}
+                                                disabled={recheckingRepo === repo.name}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-black border border-neon-green/20 hover:border-neon-green text-[10px] text-neon-green uppercase rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                                              >
+                                                <Play className={`w-3 h-3 ${recheckingRepo === repo.name ? "animate-spin" : ""}`} />
+                                                {recheckingRepo === repo.name ? "Running Build..." : "Run Manual CI Check"}
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
+
+                                  {/* SOURCE EXPLORER TAB */}
+                                  {repoTab[repo.name] === "explorer" && ownerHandle && (
+                                    <SourceExplorer
+                                      owner={ownerHandle}
+                                      repo={repo.name}
+                                    />
+                                  )}
+                                  {repoTab[repo.name] === "explorer" && !ownerHandle && (
+                                    <div className="text-[10px] text-neutral-600 font-mono py-4 text-center">
+                                      LOADING PROFILE — SOURCE EXPLORER UNAVAILABLE
                                     </div>
-                                  </div>
+                                  )}
+
                                 </div>
                               </motion.div>
                             </td>
