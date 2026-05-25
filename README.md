@@ -70,3 +70,24 @@ Open **[http://localhost:3000](http://localhost:3000)** in your browser to view 
 2. **Search public profiles**: In the repository list search input, type `@username` (e.g. `@torvalds`) and press `Enter` to resolve any public GitHub user's analytics instantly.
 3. **Trigger Showcase**: If you are logged in and viewing your own profile, toggle **`[set as showcase]`** at the bottom of the statistics card. Toggling it `active` redirects any guest visitor accessing `/` or `/dashboard` directly to your profile.
 4. **Interactive CLI**: Click the bottom shell bar to expand the CLI. Type `help` to list commands, or type `hack` to run the payload override.
+
+---
+
+## 🛡️ Security, Performance & Stability Architecture
+
+The application has been heavily optimized for maximum speed, security, and stability:
+
+### 🔒 Advanced Security Implementations
+* **Path & SSRF Protection**: Custom regex sanitizers enforce strict rules on dynamic GitHub handles (`/^[a-zA-Z0-9_-]+$/`), blocking path traversal (`../`), directory hijacking, or Server-Side Request Forgery (SSRF) attempts.
+* **Server-Side Authorization Lock**: The showcase config API (`/api/showcase-config`) enforces strict authentication and locks configuration modifications (`POST` requests) specifically to the owner profile (`rohit-simbanic`). Guest requests receive a `403 Forbidden` response.
+* **Smart Route Interception & Redirects**: Dynamic dashboard pages (`/dashboard/[username]`) intercept unauthenticated session requests, locking guest browsing to allowed public showcase profiles and redirecting unauthorized routes to `/login`.
+
+### 🚀 Performance & Core Web Vitals Optimization
+* **TBT (Total Blocking Time) Reduction**: Wrap core compute-heavy logic (such as dynamic developer language distribution percentages and contribution matrix grid generation) in React `useMemo` hooks.
+* **Deterministic Render Purity**: Replaced unstable runtime generation (impure `Math.random()`) in the contribution grid with a pure pseudo-random sine wave generator. This maintains high performance and completely eliminates Cumulative Layout Shift (CLS) and layout recalculations on re-renders.
+* **LCP (Largest Contentful Paint) Acceleration**: Handled developer avatar image rendering with Next.js image priority flags, ensuring critical elements load instantly above the fold.
+
+### 🧹 Memory Leak Prevention & Lint Enforcement
+* **CI/CD Check Cleanup**: Integrated `useRef` and unmount effect hooks (`clearTimeout`) for simulated CI checks, preventing potential state updates on unmounted React elements.
+* **Zero-Warnings Build**: Enforces 100% type-safety and standard-compliant JSX comment syntax. Complies with strict JSX structures, eliminating all TypeScript and ESLint warnings.
+
