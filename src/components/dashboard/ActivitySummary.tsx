@@ -12,38 +12,51 @@ export const ActivitySummary: React.FC = () => {
 
   // Dynamic content based on timeframe
   const getContent = () => {
+    const handleClean = profile.handle || "@steipete";
+    const repoNames = profile.repoContributions.slice(0, 3).map(r => r.name.split("/")[1] || r.name);
+    
     switch (timeframe) {
-      case "day":
+      case "day": {
+        const dayCommits = Math.max(1, Math.floor(profile.stats.commits / 7));
+        const dayPRs = Math.max(0, Math.floor(profile.stats.prs / 7));
+        const dayIssues = Math.max(0, Math.floor(profile.stats.issues / 7));
+        const dayComments = Math.max(0, Math.floor(profile.stats.comments / 7));
+        const dayContributions = profile.repoContributions.slice(0, 3).map(c => ({
+          name: c.name,
+          count: Math.max(1, Math.floor(c.count / 7))
+        }));
+
         return {
-          text: "Today focused heavily on local sandbox trials in openclaw/crabbox, resolving WASM virtualization faults. Commits were pushed to resolve clawsweeper Docker caching layers. Initiated security audit handshake inside steipete/oracle to check endpoint vulnerability indices. Cleaned up dev environment configurations.",
-          stats: { commits: 24, prs: 3, issues: 1, comments: 8 },
-          contributions: [
-            { name: "openclaw/crabbox", count: 12 },
-            { name: "openclaw/clawsweeper", count: 8 },
-            { name: "steipete/oracle", count: 4 },
-          ],
-          footer: "28 public events · 3 active repos · updated 5 mins ago",
+          text: `Today, ${handleClean} focused heavily on active development and resolving local faults. Commits were pushed to repositories like ${repoNames.slice(0, 2).join(" and ") || "projects"}. Work involved refactoring dependency layers, committing code updates, and reviewing open pull requests.`,
+          stats: { commits: dayCommits, prs: dayPRs, issues: dayIssues, comments: dayComments },
+          contributions: dayContributions,
+          footer: `${Math.max(5, Math.floor((profile.stats.commits + profile.stats.prs) * 0.2))} public events · ${profile.activeRepos} active repos · updated 5 mins ago`,
         };
-      case "month":
+      }
+      case "month": {
+        const monthCommits = profile.stats.commits * 4;
+        const monthPRs = profile.stats.prs * 4;
+        const monthIssues = profile.stats.issues * 4;
+        const monthComments = profile.stats.comments * 4;
+        const monthContributions = profile.repoContributions.map(c => ({
+          name: c.name,
+          count: c.count * 4
+        }));
+
         return {
-          text: "Over the past month, we completed a massive engineering sprint cycle across all primary packages. openclaw core was refactored for async scheduler pipelines, deploying v1.2.0 production-ready release. Decommissioned three legacy components. Integrated multi-model token parsers in CodexBar. Re-architected clawsweeper's Docker layers, reducing memory waste by 38%. Resolved 18 outstanding issues and published multiple docs updates.",
-          stats: { commits: 680, prs: 142, issues: 76, comments: 245 },
-          contributions: [
-            { name: "openclaw/openclaw", count: 450 },
-            { name: "steipete/CodexBar", count: 98 },
-            { name: "openclaw/clawsweeper", count: 72 },
-            { name: "openclaw/crabbox", count: 40 },
-            { name: "steipete/IndexBar", count: 20 },
-          ],
-          footer: "1,248 public events · 12 repos · updated today",
+          text: `Over the past month, ${handleClean} completed a massive engineering sprint cycle across all primary packages. Code integrations and refactoring advanced in parallel for repositories including ${repoNames.join(", ") || "repositories"}. Major achievements involved pushing ${monthCommits} commits, resolving pull requests, auditing security indices, and closing outstanding issues.`,
+          stats: { commits: monthCommits, prs: monthPRs, issues: monthIssues, comments: monthComments },
+          contributions: monthContributions,
+          footer: `${(profile.stats.commits + profile.stats.prs) * 5} public events · ${profile.activeRepos} repos · updated today`,
         };
+      }
       case "week":
       default:
         return {
           text: profile.workingSummary,
           stats: profile.stats,
           contributions: profile.repoContributions,
-          footer: "296 public events · 7 repos · updated today",
+          footer: `${(profile.stats.commits + profile.stats.prs) * 1.5} public events · ${profile.activeRepos} repos · updated today`,
         };
     }
   };

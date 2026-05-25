@@ -22,6 +22,7 @@ export interface DeveloperProfile {
   trustScore: number;
   trustRating: "HIGH" | "MEDIUM" | "LOW" | "CRITICAL";
   githubAge: string;
+  githubAgeEpoch?: number;
   followers: string;
   activeRepos: number;
   workingSummary: string;
@@ -32,6 +33,7 @@ export interface DeveloperProfile {
     comments: number;
   };
   repoContributions: { name: string; count: number }[];
+  commitActivity?: { day: string; commits: number }[];
 }
 
 export const MOCK_PROFILE: DeveloperProfile = {
@@ -40,6 +42,7 @@ export const MOCK_PROFILE: DeveloperProfile = {
   trustScore: 91,
   trustRating: "HIGH",
   githubAge: "17 years on GitHub",
+  githubAgeEpoch: 2009,
   followers: "50K followers",
   activeRepos: 7,
   workingSummary: "openclaw received a dense round of fixes and follow-up branches covering gateway metadata caching, WebChat completion timing, PDF fallback handling for MiniMax models, Telegram preview retention, Twitch auth binding, realtime voice controls, and context window recalculation bugs. Multiple repos advanced in parallel, including clawsweeper freshness rechecks, crabbox failure-classification work, Peekaboo CLI ergonomics, crabfleet updates, birdclaw commits, and documentation updates across openclaw/docs. The week also included publishing the openclaw 2026.5.22 release, merging related pull requests, and localization discussion and commits in CodexBar for Traditional Chinese support.",
@@ -55,6 +58,15 @@ export const MOCK_PROFILE: DeveloperProfile = {
     { name: "openclaw/docs", count: 14 },
     { name: "openclaw/clawsweeper", count: 11 },
     { name: "openclaw/crabbox", count: 13 },
+  ],
+  commitActivity: [
+    { day: "Mon", commits: 25 },
+    { day: "Tue", commits: 38 },
+    { day: "Wed", commits: 15 },
+    { day: "Thu", commits: 42 },
+    { day: "Fri", commits: 30 },
+    { day: "Sat", commits: 8 },
+    { day: "Sun", commits: 12 },
   ],
 };
 

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { MOCK_PROFILE, MOCK_REPOS, RepoItem, DeveloperProfile } from "@/lib/mockData";
+import { RepoItem, DeveloperProfile } from "@/lib/mockData";
 
 export interface CommandLog {
   command: string;
@@ -29,8 +29,26 @@ interface DashboardState {
 }
 
 export const useDashboardStore = create<DashboardState>((set, get) => ({
-  profile: MOCK_PROFILE,
-  repos: MOCK_REPOS,
+  profile: {
+    handle: "",
+    avatarUrl: "",
+    trustScore: 0,
+    trustRating: "HIGH" as const,
+    githubAge: "",
+    githubAgeEpoch: undefined,
+    followers: "",
+    activeRepos: 0,
+    workingSummary: "",
+    stats: {
+      commits: 0,
+      prs: 0,
+      issues: 0,
+      comments: 0,
+    },
+    repoContributions: [],
+    commitActivity: [],
+  },
+  repos: [],
   searchQuery: "",
   activeFilter: "all",
   terminalHistory: [

@@ -154,11 +154,11 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({ isOwner = fals
             <div className="flex items-center gap-2 mt-4">
               <Calendar className="w-4 h-4 text-neon-green/70 group-hover:scale-110 transition-transform" />
               <div className="font-mono text-xs font-semibold text-white/90">
-                17 Years
+                {profile.githubAge}
               </div>
             </div>
             <div className="text-[8px] font-mono text-neutral-500 mt-2">
-              Verified account epoch 2009
+              Verified account epoch {profile.githubAgeEpoch || "N/A"}
             </div>
           </div>
 

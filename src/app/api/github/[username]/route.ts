@@ -99,6 +99,24 @@ export async function GET(
     const finalIssues = issueCount || Math.floor(Math.random() * 4);
     const finalComments = commentCount || Math.floor(Math.random() * 10);
 
+    // Distribute finalCommits randomly across 7 days of the week for dynamic graph representation
+    const commitActivity = [
+      { day: "Mon", commits: 0 },
+      { day: "Tue", commits: 0 },
+      { day: "Wed", commits: 0 },
+      { day: "Thu", commits: 0 },
+      { day: "Fri", commits: 0 },
+      { day: "Sat", commits: 0 },
+      { day: "Sun", commits: 0 },
+    ];
+    let remainingCommits = finalCommits;
+    for (let i = 0; i < 6; i++) {
+      const share = Math.floor(Math.random() * (remainingCommits / (7 - i) * 1.8));
+      commitActivity[i].commits = share;
+      remainingCommits -= share;
+    }
+    commitActivity[6].commits = Math.max(0, remainingCommits);
+
     // Compile dynamic "WORKING ON" summary from events
     let workingSummary = "";
     if (recentCommitMsgs.length > 0) {
@@ -230,6 +248,7 @@ export async function GET(
       trustScore,
       trustRating,
       githubAge,
+      githubAgeEpoch: creationDate.getFullYear(),
       followers: followersText,
       activeRepos: reposData.length,
       workingSummary,
@@ -240,6 +259,7 @@ export async function GET(
         comments: finalComments,
       },
       repoContributions,
+      commitActivity,
     };
 
     return NextResponse.json({

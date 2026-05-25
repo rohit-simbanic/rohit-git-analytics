@@ -40,7 +40,13 @@ export default function DynamicDashboardPage({ params }: PageProps) {
 
       const cleanUser = username.replace(/^@/, "").toLowerCase();
 
-      if (status === "unauthenticated") {
+      if (status === "authenticated" && session?.user?.name) {
+        const cleanLoggedInUser = session.user.name.replace(/^@/, "").toLowerCase();
+        if (cleanUser !== cleanLoggedInUser) {
+          router.push("/login");
+          return;
+        }
+      } else if (status === "unauthenticated") {
         try {
           const res = await fetch("/api/showcase-config");
           if (isCancelled) return;

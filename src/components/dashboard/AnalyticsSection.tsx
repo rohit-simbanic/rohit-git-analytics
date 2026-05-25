@@ -2,13 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from "recharts";
-import { MOCK_COMMIT_ACTIVITY } from "@/lib/mockData";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { Terminal, BarChart2, PieChart as PieIcon, Activity } from "lucide-react";
 
 export const AnalyticsSection: React.FC = () => {
   const [isMounted, setIsMounted] = useState(false);
-  const { repos } = useDashboardStore();
+  const { repos, profile } = useDashboardStore();
 
   useEffect(() => {
     setIsMounted(true);
@@ -246,7 +245,15 @@ export const AnalyticsSection: React.FC = () => {
         <div className="w-full h-44 font-mono text-[10px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={MOCK_COMMIT_ACTIVITY}
+              data={profile.commitActivity && profile.commitActivity.length > 0 ? profile.commitActivity : [
+                { day: "Mon", commits: 0 },
+                { day: "Tue", commits: 0 },
+                { day: "Wed", commits: 0 },
+                { day: "Thu", commits: 0 },
+                { day: "Fri", commits: 0 },
+                { day: "Sat", commits: 0 },
+                { day: "Sun", commits: 0 },
+              ]}
               margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
             >
               <defs>
