@@ -19,7 +19,7 @@ interface PageProps {
 
 export default function DynamicDashboardPage({ params }: PageProps) {
   const { username } = use(params);
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   
   const { fetchUserProfile, fetchStatus, fetchError } = useDashboardStore();
@@ -28,12 +28,54 @@ export default function DynamicDashboardPage({ params }: PageProps) {
   // Parse clean handles
   const displayHandle = username.startsWith("@") ? username : `@${username}`;
 
-  // Fetch live stats on mount or route handle changes
+  // Fetch live stats on mount or route handle changes with access checks for guests
   useEffect(() => {
-    if (username) {
+    if (!username) return;
+
+    let isCancelled = false;
+
+    async function checkAccessAndFetch() {
+      // Wait until NextAuth session state resolves
+      if (status === "loading") return;
+
+      const cleanUser = username.replace(/^@/, "").toLowerCase();
+
+      if (status === "unauthenticated") {
+        try {
+          const res = await fetch("/api/showcase-config");
+          if (isCancelled) return;
+
+          let allowedUser = "steipete";
+          if (res.ok) {
+            const config = await res.json();
+            allowedUser = config.allowPublicShowcase && config.defaultUser
+              ? config.defaultUser.replace(/^@/, "").toLowerCase()
+              : "steipete";
+          }
+
+          if (cleanUser !== allowedUser) {
+            router.push("/login");
+            return;
+          }
+        } catch (e) {
+          // If showcase API check fails, default to allowing only "steipete"
+          if (cleanUser !== "steipete") {
+            router.push("/login");
+            return;
+          }
+        }
+      }
+
+      // If authorized, fetch the user profile stats
       fetchUserProfile(username);
     }
-  }, [username, fetchUserProfile]);
+
+    checkAccessAndFetch();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [username, status, router, fetchUserProfile]);
 
   // Boot sequence loading simulation
   useEffect(() => {

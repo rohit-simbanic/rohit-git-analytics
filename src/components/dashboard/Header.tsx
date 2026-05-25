@@ -2,11 +2,13 @@
 
 import React from "react";
 import { signOut, useSession } from "next-auth/react";
-import { ChevronLeft, ChevronRight, RotateCw, Shield, LogOut, Terminal, ExternalLink } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight, RotateCw, Shield, LogOut, LogIn, Terminal, ExternalLink } from "lucide-react";
 import Image from "next/image";
 
 export const Header: React.FC = () => {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const userName = session?.user?.name || "@steipete";
   const userAvatar = session?.user?.image || "https://avatars.githubusercontent.com/u/10496?v=4"; // steipete github image
 
@@ -66,29 +68,39 @@ export const Header: React.FC = () => {
           <span>GATE_STABLE</span>
         </div>
 
-        {/* User Card Badge */}
-        <div className="flex items-center gap-2 bg-black/40 border border-neon-green/10 hover:border-neon-green/30 rounded-xl px-2.5 py-1.5 transition-colors">
-          <div className="relative w-6 h-6 rounded-lg overflow-hidden border border-neon-green/20">
-            <Image 
-              src={userAvatar} 
-              alt="Hacker Avatar" 
-              fill
-              className="object-cover"
-              unoptimized
-            />
+        {/* User Card Badge or Sign In button */}
+        {status === "authenticated" ? (
+          <div className="flex items-center gap-2 bg-black/40 border border-neon-green/10 hover:border-neon-green/30 rounded-xl px-2.5 py-1.5 transition-colors">
+            <div className="relative w-6 h-6 rounded-lg overflow-hidden border border-neon-green/20">
+              <Image 
+                src={userAvatar} 
+                alt="Hacker Avatar" 
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+            <span className="font-mono text-xs font-semibold text-neon-green/80 hidden sm:inline">
+              {userName}
+            </span>
+            <div className="w-px h-3.5 bg-neon-green/20 mx-1 hidden sm:inline" />
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="p-1 text-neon-green/50 hover:text-neon-green transition-colors cursor-pointer"
+              title="Log Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
-          <span className="font-mono text-xs font-semibold text-neon-green/80 hidden sm:inline">
-            {userName}
-          </span>
-          <div className="w-px h-3.5 bg-neon-green/20 mx-1 hidden sm:inline" />
+        ) : (
           <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            className="p-1 text-neon-green/50 hover:text-neon-green transition-colors cursor-pointer"
-            title="Log Out"
+            onClick={() => router.push("/login")}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-neon-green/10 border border-neon-green/35 hover:border-neon-green text-xs font-mono text-neon-green rounded-xl transition-all cursor-pointer font-bold active:scale-[0.98] hover:shadow-[0_0_12px_rgba(163,255,18,0.15)] bg-black/40"
           >
-            <LogOut className="w-4 h-4" />
+            <LogIn className="w-4 h-4" />
+            Sign In
           </button>
-        </div>
+        )}
       </div>
       
     </div>
