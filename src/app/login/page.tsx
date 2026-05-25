@@ -8,7 +8,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function LoginPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -143,7 +143,7 @@ export default function LoginPage() {
           router.push("/dashboard");
         }, 800);
       }
-    } catch (err) {
+    } catch {
       setIsDecrypting(false);
       setErrorMsg("SYSTEM EXCEPTION OCCURRED");
       appendOutput("FATAL SYSTEM EXCEPTION IN AUTH CORES.");
@@ -231,7 +231,7 @@ export default function LoginPage() {
                 {/* Username Input */}
                 <div className="space-y-1.5">
                   <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-400">
-                    // ENTER_HACKER_ID
+                    {"// ENTER_HACKER_ID"}
                   </label>
                   <div className="relative flex items-center">
                     <span className="absolute left-3.5 text-xs font-mono text-neon-green/50">@</span>
@@ -249,7 +249,7 @@ export default function LoginPage() {
                 {/* Password Input */}
                 <div className="space-y-1.5">
                   <label className="block text-[10px] font-mono uppercase tracking-widest text-neutral-400">
-                    // DECRYPTION_KEY
+                    {"// DECRYPTION_KEY"}
                   </label>
                   <div className="relative flex items-center">
                     <Lock className="absolute left-3.5 w-4 h-4 text-neon-green/30" />
@@ -298,7 +298,7 @@ export default function LoginPage() {
                     onClick={fillDemoCreds}
                     className="w-full bg-black/40 hover:bg-black/60 border border-neon-green/20 text-neon-green font-mono text-[10px] uppercase tracking-wider py-2.5 rounded-xl transition-all hover:border-neon-green/50 cursor-pointer"
                   >
-                    // Inject Demo Session
+                    {"// Inject Demo Session"}
                   </button>
                 </div>
               </form>

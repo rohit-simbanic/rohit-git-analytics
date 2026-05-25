@@ -3,7 +3,7 @@
 import React from "react";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, RotateCw, Shield, LogOut, LogIn, Terminal, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCw, Shield, LogOut, LogIn, ExternalLink } from "lucide-react";
 import Image from "next/image";
 
 export const Header: React.FC = () => {
@@ -48,7 +48,7 @@ export const Header: React.FC = () => {
       </div>
 
       {/* Center Address Bar (Glassmorphic) */}
-      <div className="flex-1 max-w-md mx-4">
+      <div className="flex-1 max-w-md mx-4 hidden md:block">
         <div className="bg-black/50 border border-neon-green/10 rounded-lg px-3 py-1 flex items-center justify-between text-xs font-mono text-neon-green/60 shadow-inner">
           <div className="flex items-center gap-1.5 truncate">
             <Shield className="w-3 h-3 text-neon-green/40 animate-pulse" />

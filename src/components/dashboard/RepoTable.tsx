@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useDashboardStore } from "@/store/useDashboardStore";
-import { Search, Star, Play, CheckCircle2, XCircle, ChevronDown, ChevronUp, AlertCircle, RefreshCw } from "lucide-react";
+import { Play, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 
@@ -20,6 +20,16 @@ export const RepoTable: React.FC = () => {
 
   const [expandedRepo, setExpandedRepo] = useState<string | null>(null);
   const [recheckingRepo, setRecheckingRepo] = useState<string | null>(null);
+  const recheckTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup timeout on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (recheckTimeoutRef.current) {
+        clearTimeout(recheckTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -56,10 +66,11 @@ export const RepoTable: React.FC = () => {
     setRecheckingRepo(repoName);
     addTerminalCommand(`ci-trigger --run ${repoName}`, `Initiating CI/CD build check for ${repoName}...`, "input");
     
-    setTimeout(() => {
+    recheckTimeoutRef.current = setTimeout(() => {
       triggerCIRecheck(repoName);
       setRecheckingRepo(null);
       addTerminalCommand(`ci-success`, `All checks passed for ${repoName}. System reports status SUCCESS.`, "success");
+      recheckTimeoutRef.current = null;
     }, 1500);
   };
 
@@ -277,16 +288,15 @@ export const RepoTable: React.FC = () => {
                                 animate={{ opacity: 1, height: "auto" }}
                                 exit={{ opacity: 0, height: 0 }}
                                 className="px-5 py-4 font-mono text-xs border-t border-neon-green/5 space-y-3.5"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <span className="text-[10px] text-neutral-400 uppercase tracking-widest font-semibold">// REPO_OPERATIONS: {repo.name}</span>
+                              >                                 <div className="flex items-center justify-between">
+                                  <span className="text-[10px] text-neutral-400 uppercase tracking-widest font-semibold">{"// REPO_OPERATIONS:"} {repo.name}</span>
                                   <span className="text-[9px] text-neutral-600">ID: SHA256-REGISTRY-{repo.name.toUpperCase().replace("/", "-")}</span>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   {/* Left Panel: Build Info */}
                                   <div className="bg-black/60 border border-neon-green/5 rounded-xl p-3.5 space-y-2">
-                                    <div className="text-[10px] text-neutral-500 uppercase tracking-wider">// SYSTEM_METRICS</div>
+                                    <div className="text-[10px] text-neutral-500 uppercase tracking-wider">{"// SYSTEM_METRICS"}</div>
                                     <div className="flex justify-between">
                                       <span className="text-neutral-500">Security Scans:</span>
                                       <span className="text-neon-green">0 Vulnerabilities</span>
@@ -304,7 +314,7 @@ export const RepoTable: React.FC = () => {
                                   {/* Right Panel: Operations Trigger */}
                                   <div className="bg-black/60 border border-neon-green/5 rounded-xl p-3.5 flex flex-col justify-between items-start gap-4">
                                     <div>
-                                      <div className="text-[10px] text-neutral-500 uppercase tracking-wider">// ACTIONS</div>
+                                      <div className="text-[10px] text-neutral-500 uppercase tracking-wider">{"// ACTIONS"}</div>
                                       <p className="text-[10px] text-neutral-400 mt-1 leading-normal">
                                         Run cryptographic build validations or refresh repository metadata.
                                       </p>

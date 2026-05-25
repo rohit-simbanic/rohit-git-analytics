@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useDashboardStore } from "@/store/useDashboardStore";
-import { Calendar, Users, GitFork, Info, X, ShieldAlert, CheckCircle2 } from "lucide-react";
+import { Calendar, Users, GitFork, Info, X, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 
 interface ProfileOverviewProps {
@@ -82,6 +82,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({ isOwner = fals
             src={profile.avatarUrl}
             alt="Developer Avatar"
             fill
+            priority
             className="object-cover scale-105 group-hover:scale-110 transition-transform duration-500"
             unoptimized
           />
@@ -203,7 +204,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({ isOwner = fals
               <span className="w-1.5 h-1.5 rounded-full bg-neon-green animate-pulse" />
               <span className="text-[9px] font-mono text-neutral-500 uppercase">SYS_ACTIVE</span>
             </div>
-            {isOwner && (
+            {isOwner && profile.handle.replace(/^@/, "").toLowerCase() === "rohit-simbanic" && (
               <button
                 onClick={handleToggleShowcase}
                 disabled={isTogglingShowcase}

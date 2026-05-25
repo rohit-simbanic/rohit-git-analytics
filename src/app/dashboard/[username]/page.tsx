@@ -10,7 +10,7 @@ import { RepoTable } from "@/components/dashboard/RepoTable";
 import { AnalyticsSection } from "@/components/dashboard/AnalyticsSection";
 import { InteractiveTerminal } from "@/components/dashboard/InteractiveTerminal";
 import { useDashboardStore } from "@/store/useDashboardStore";
-import { Cpu, Terminal, AlertTriangle, ShieldAlert, ArrowLeft } from "lucide-react";
+import { Cpu, Terminal, ShieldAlert, ArrowLeft } from "lucide-react";
 import { GlassCard } from "@/components/ui/GlassCard";
 
 interface PageProps {
@@ -22,7 +22,7 @@ export default function DynamicDashboardPage({ params }: PageProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
   
-  const { fetchUserProfile, fetchStatus, fetchError } = useDashboardStore();
+  const { fetchUserProfile, fetchStatus } = useDashboardStore();
   const [bootProgress, setBootProgress] = useState(0);
 
   // Parse clean handles
@@ -63,7 +63,7 @@ export default function DynamicDashboardPage({ params }: PageProps) {
             router.push("/login");
             return;
           }
-        } catch (e) {
+        } catch {
           // If showcase API check fails, default to allowing only "steipete"
           if (cleanUser !== "steipete") {
             router.push("/login");
@@ -81,12 +81,14 @@ export default function DynamicDashboardPage({ params }: PageProps) {
     return () => {
       isCancelled = true;
     };
-  }, [username, status, router, fetchUserProfile]);
+  }, [username, status, router, fetchUserProfile, session]);
 
   // Boot sequence loading simulation
   useEffect(() => {
     if (fetchStatus === "loading") {
-      setBootProgress(0);
+      const timer = setTimeout(() => {
+        setBootProgress(0);
+      }, 0);
       const interval = setInterval(() => {
         setBootProgress((prev) => {
           if (prev >= 100) {
@@ -96,7 +98,10 @@ export default function DynamicDashboardPage({ params }: PageProps) {
           return prev + Math.floor(Math.random() * 15) + 12;
         });
       }, 70);
-      return () => clearInterval(interval);
+      return () => {
+        clearTimeout(timer);
+        clearInterval(interval);
+      };
     }
   }, [fetchStatus]);
 

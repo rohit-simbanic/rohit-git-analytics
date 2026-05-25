@@ -178,15 +178,16 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         `Profile @${cleanUsername} resolved successfully. Trust score evaluated: ${data.profile.trustScore}.`,
         "success"
       );
-    } catch (err: any) {
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Failed to query developer node";
       set({
         fetchStatus: "error",
-        fetchError: err.message || "Failed to query developer node",
+        fetchError: errMsg,
       });
 
       get().addTerminalCommand(
         "query-failed",
-        `ERR: Failed to resolve node @${cleanUsername}: ${err.message}`,
+        `ERR: Failed to resolve node @${cleanUsername}: ${errMsg}`,
         "error"
       );
     }

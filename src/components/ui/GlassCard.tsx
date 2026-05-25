@@ -45,7 +45,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
           <h3 className="text-xs font-mono text-neon-green/70 tracking-widest uppercase font-semibold">
             {title}
           </h3>
-          <span className="text-[10px] font-mono text-neon-green/30 select-none">// SYS.LOG</span>
+          <span className="text-[10px] font-mono text-neon-green/30 select-none">{"// SYS.LOG"}</span>
         </div>
       )}
 

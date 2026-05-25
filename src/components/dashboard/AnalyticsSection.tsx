@@ -1,28 +1,23 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from "recharts";
 import { useDashboardStore } from "@/store/useDashboardStore";
-import { Terminal, BarChart2, PieChart as PieIcon, Activity } from "lucide-react";
+import { BarChart2, PieChart as PieIcon, Activity } from "lucide-react";
 
 export const AnalyticsSection: React.FC = () => {
   const [isMounted, setIsMounted] = useState(false);
   const { repos, profile } = useDashboardStore();
 
   useEffect(() => {
-    setIsMounted(true);
+    const timer = setTimeout(() => {
+      setIsMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
-  if (!isMounted) {
-    return (
-      <div className="w-full min-h-[300px] flex items-center justify-center font-mono text-neutral-600 text-xs">
-        LOADING ANALYTICS ENGINE...
-      </div>
-    );
-  }
-
-  // Generate mock grid calendar: 18 columns, 7 rows (representing recent 18 weeks of activity)
-  const generateContributionData = () => {
+  // Generate contribution grid calendar: 30 columns, 7 rows (memoized to prevent re-generation on every render)
+  const contributionGrid = useMemo(() => {
     const list = [];
     const colors = [
       "bg-neutral-900/40 border border-neutral-900/60", // 0 commits
@@ -35,35 +30,33 @@ export const AnalyticsSection: React.FC = () => {
     for (let c = 0; c < 30; c++) {
       const col = [];
       for (let r = 0; r < 7; r++) {
-        // Randomize weight
-        const rand = Math.random();
+        // Deterministic pseudo-randomness based on column/row index to ensure purity
+        const seed = c * 7 + r;
+        const rand = (Math.sin(seed) * 10000) % 1;
+        const absRand = Math.abs(rand);
+        
         let level = 0;
-        if (rand > 0.85) level = 4;
-        else if (rand > 0.6) level = 3;
-        else if (rand > 0.4) level = 2;
-        else if (rand > 0.15) level = 1;
+        if (absRand > 0.85) level = 4;
+        else if (absRand > 0.6) level = 3;
+        else if (absRand > 0.4) level = 2;
+        else if (absRand > 0.15) level = 1;
+        
+        const commits = level === 0 ? 0 : Math.floor(absRand * (level * 3)) + 1;
         
         col.push({
-          commits: level === 0 ? 0 : Math.floor(Math.random() * (level * 3)) + 1,
+          commits,
           colorClass: colors[level],
         });
       }
       list.push(col);
     }
     return list;
-  };
+  }, []);
 
-  const contributionGrid = generateContributionData();
-
-  // Compute languages distribution dynamically from repos!
-  const getLanguagesData = () => {
+  // Compute languages distribution dynamically from repos (memoized)
+  const languagesData = useMemo(() => {
     if (!repos || repos.length === 0) {
-      return [
-        { name: "Swift", value: 38, color: "#F05138" },
-        { name: "TypeScript", value: 28, color: "#3178C6" },
-        { name: "Go", value: 18, color: "#00ADD8" },
-        { name: "Rust", value: 16, color: "#DEA584" },
-      ];
+      return [];
     }
     
     const countMap: Record<string, number> = {};
@@ -99,9 +92,15 @@ export const AnalyticsSection: React.FC = () => {
     
     result.sort((a, b) => b.value - a.value);
     return result.slice(0, 4);
-  };
+  }, [repos]);
 
-  const languagesData = getLanguagesData();
+  if (!isMounted) {
+    return (
+      <div className="w-full min-h-[300px] flex items-center justify-center font-mono text-neutral-600 text-xs">
+        LOADING ANALYTICS ENGINE...
+      </div>
+    );
+  }
 
   return (
     <div className="w-full grid grid-cols-1 xl:grid-cols-3 gap-4 select-none">
@@ -141,7 +140,7 @@ export const AnalyticsSection: React.FC = () => {
 
         {/* Legend */}
         <div className="flex items-center justify-between mt-3 font-mono text-[9px] text-neutral-500 uppercase pt-2 border-t border-neon-green/5">
-          <span>// Calendar activity footprint</span>
+          <span>{"// Calendar activity footprint"}</span>
           <div className="flex items-center gap-1">
             <span>Less</span>
             <div className="w-2.5 h-2.5 rounded-[1px] bg-neutral-900" />
@@ -166,7 +165,7 @@ export const AnalyticsSection: React.FC = () => {
                 COMPILER_DISTRIBUTION
               </span>
             </div>
-            <span className="text-[9px] font-mono text-neutral-500">// PIE.SYS</span>
+            <span className="text-[9px] font-mono text-neutral-500">{"// PIE.SYS"}</span>
           </div>
 
           {/* Chart Wrapper */}
@@ -196,7 +195,7 @@ export const AnalyticsSection: React.FC = () => {
                 </Pie>
                 <Tooltip 
                   contentStyle={{
-                    background: "rgba(5, 5, 5, 0.9)",
+                    background: "rgba(5, 5, 5, 0.95)",
                     border: "1px solid rgba(163, 255, 18, 0.2)",
                     borderRadius: "8px",
                     fontFamily: "monospace",
@@ -223,7 +222,7 @@ export const AnalyticsSection: React.FC = () => {
         </div>
 
         <div className="text-[8px] font-mono text-neutral-500 uppercase mt-4 pt-2 border-t border-neon-green/5">
-          // Primary code translation targets
+          {"// Primary code translation targets"}
         </div>
       </div>
 
@@ -238,7 +237,7 @@ export const AnalyticsSection: React.FC = () => {
               WEEKLY_GIT_FLUX_CALCULUS
             </span>
           </div>
-          <span className="text-[9px] font-mono text-neutral-500 uppercase">// TIME_SERIES_07D</span>
+          <span className="text-[9px] font-mono text-neutral-500 uppercase">{"// TIME_SERIES_07D"}</span>
         </div>
 
         {/* Recharts Area Chart */}
@@ -302,7 +301,7 @@ export const AnalyticsSection: React.FC = () => {
 
         {/* Footer indicators */}
         <div className="flex items-center justify-between mt-3 font-mono text-[9px] text-neutral-500 uppercase pt-2 border-t border-neon-green/5">
-          <span>// Git push event volume frequency</span>
+          <span>{"// Git push event volume frequency"}</span>
           <span>AVERAGE_DENSITY: 24.2 / DAY</span>
         </div>
       </div>

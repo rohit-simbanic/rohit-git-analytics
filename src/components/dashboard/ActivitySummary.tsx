@@ -146,7 +146,7 @@ export const ActivitySummary: React.FC = () => {
 
       {/* Footer info line */}
       <div className="w-full flex items-center justify-start mt-3 font-mono text-[9px] text-neutral-500 uppercase tracking-wider">
-        <span>// {current.footer}</span>
+        <span>{"// "}{current.footer}</span>
       </div>
     </div>
   );

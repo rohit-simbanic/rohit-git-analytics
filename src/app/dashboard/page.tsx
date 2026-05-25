@@ -23,7 +23,7 @@ export default async function BaseDashboardRedirectPage() {
     const config = JSON.parse(content);
     defaultUser = config.defaultUser || "steipete";
     allowPublicShowcase = !!config.allowPublicShowcase;
-  } catch (error) {
+  } catch {
     // If config file is missing/unreadable, fall back to defaults
   }
 

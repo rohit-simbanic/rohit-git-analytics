@@ -1,5 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 
+interface GitHubEvent {
+  type: string;
+  repo?: { name?: string };
+  payload?: {
+    commits?: Array<{ message?: string }>;
+  };
+}
+
+interface GitHubRepo {
+  name: string;
+  full_name: string;
+  description?: string | null;
+  stargazers_count: number;
+  pushed_at?: string;
+  updated_at?: string;
+  language?: string | null;
+  topics?: string[];
+  open_issues_count: number;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ username: string }> }
@@ -11,6 +31,11 @@ export async function GET(
 
     if (!username) {
       return NextResponse.json({ error: "Username is required" }, { status: 400 });
+    }
+
+    // Sanitize username using regex (GitHub username requirements: alphanumeric, underscores, hyphens)
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+      return NextResponse.json({ error: "Invalid username format detected" }, { status: 400 });
     }
 
     const clientId = process.env.GITHUB_ID;
@@ -70,7 +95,7 @@ export async function GET(
     const repoEventCounts: Record<string, number> = {};
     const recentCommitMsgs: string[] = [];
 
-    eventsData.forEach((event: any) => {
+    (eventsData as GitHubEvent[]).forEach((event) => {
       const repoName = event.repo?.name || "";
       if (repoName) {
         repoEventCounts[repoName] = (repoEventCounts[repoName] || 0) + 1;
@@ -79,7 +104,7 @@ export async function GET(
       if (event.type === "PushEvent") {
         const commits = event.payload?.commits || [];
         commitCount += commits.length;
-        commits.forEach((c: any) => {
+        commits.forEach((c: { message?: string }) => {
           if (recentCommitMsgs.length < 5 && c.message) {
             recentCommitMsgs.push(c.message.split("\n")[0]);
           }
@@ -132,7 +157,7 @@ export async function GET(
     } else {
       // Fallback summary
       workingSummary = `${username} has public contributions on GitHub, with recent updates focused on repositories like ${
-        reposData.slice(0, 3).map((r: any) => r.name).join(", ") || "their projects"
+        (reposData as GitHubRepo[]).slice(0, 3).map((r) => r.name).join(", ") || "their projects"
       }. Code integration focuses on general features refactoring, dependency updates, and environment setups.`;
     }
 
@@ -144,7 +169,7 @@ export async function GET(
 
     // Add fallback contributions if empty
     if (repoContributions.length === 0 && reposData.length > 0) {
-      reposData.slice(0, 3).forEach((r: any) => {
+      (reposData as GitHubRepo[]).slice(0, 3).forEach((r) => {
         repoContributions.push({
           name: r.full_name,
           count: Math.floor(Math.random() * 8) + 2,
@@ -165,7 +190,7 @@ export async function GET(
     else if (trustScore < 85) trustRating = "MEDIUM";
 
     // 5. Parse repositories items list
-    const reposList = reposData.map((repo: any, index: number) => {
+    const reposList = (reposData as GitHubRepo[]).map((repo, index: number) => {
       // Format Star counts
       const starsVal = repo.stargazers_count;
       const starsText = starsVal >= 1000 
@@ -173,7 +198,7 @@ export async function GET(
         : `${starsVal}`;
 
       // Relative times
-      const pushedDate = new Date(repo.pushed_at || repo.updated_at);
+      const pushedDate = new Date(repo.pushed_at || repo.updated_at || new Date().toISOString());
       const diffMs = new Date().getTime() - pushedDate.getTime();
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
       
@@ -266,10 +291,11 @@ export async function GET(
       profile: parsedProfile,
       repos: reposList,
     });
-  } catch (error: any) {
-    console.error("GitHub Fetch Router Error:", error);
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error("GitHub Fetch Router Error:", err);
     return NextResponse.json(
-      { error: "Fatal server exception: " + error.message },
+      { error: "Fatal server exception: " + err.message },
       { status: 500 }
     );
   }

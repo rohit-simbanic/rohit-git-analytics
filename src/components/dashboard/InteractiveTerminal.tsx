@@ -130,7 +130,7 @@ export const InteractiveTerminal: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center gap-1.5 text-[9px] text-neutral-500 uppercase">
             <span className="w-1.5 h-1.5 rounded-full bg-neon-green/40 animate-ping" />
-            <span>Type 'help' to start</span>
+            <span>Type &apos;help&apos; to start</span>
           </div>
           <button className="text-neon-green/60 hover:text-neon-green transition-colors cursor-pointer">
             {isTerminalExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}

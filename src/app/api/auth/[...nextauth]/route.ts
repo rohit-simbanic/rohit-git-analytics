@@ -1,4 +1,5 @@
-import NextAuth from "next-auth";
+import NextAuth, { Session, User, Profile } from "next-auth";
+import { JWT } from "next-auth/jwt";
 import GithubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 
@@ -39,16 +40,16 @@ export const authOptions = {
     strategy: "jwt" as const,
   },
   callbacks: {
-    async session({ session, token }: any) {
+    async session({ session, token }: { session: Session; token: JWT & { username?: string } }) {
       if (session.user && token.username) {
         session.user.name = token.username;
       }
       return session;
     },
-    async jwt({ token, profile, user }: any) {
-      if (profile) {
+    async jwt({ token, profile, user }: { token: JWT & { username?: string }; profile?: Profile & { login?: string }; user?: User }) {
+      if (profile && profile.login) {
         token.username = `@${profile.login}`;
-      } else if (user) {
+      } else if (user && user.name) {
         token.username = user.name;
       }
       return token;

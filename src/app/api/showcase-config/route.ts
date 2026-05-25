@@ -12,7 +12,7 @@ export async function GET() {
     const content = await fs.readFile(configPath, "utf-8");
     const config = JSON.parse(content);
     return NextResponse.json(config);
-  } catch (error: any) {
+  } catch {
     // If the file doesn't exist yet, return defaults
     return NextResponse.json({
       defaultUser: "steipete",
@@ -25,8 +25,14 @@ export async function POST(request: NextRequest) {
   try {
     // 1. Verify user is authenticated
     const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    if (!session || !session.user || !session.user.name) {
       return NextResponse.json({ error: "Unauthorized access: login required." }, { status: 401 });
+    }
+
+    // 1b. Restrict access specifically to rohit-simbanic
+    const loggedInUser = session.user.name.replace(/^@/, "").toLowerCase();
+    if (loggedInUser !== "rohit-simbanic") {
+      return NextResponse.json({ error: "Access Denied: Only rohit-simbanic can configure the showcase settings." }, { status: 403 });
     }
 
     // 2. Parse request parameters
@@ -49,8 +55,9 @@ export async function POST(request: NextRequest) {
     await fs.writeFile(configPath, JSON.stringify(newConfig, null, 2), "utf-8");
 
     return NextResponse.json({ success: true, config: newConfig });
-  } catch (error: any) {
-    console.error("Showcase API Config Error:", error);
-    return NextResponse.json({ error: "Fatal exception: " + error.message }, { status: 500 });
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error("Showcase API Config Error:", err);
+    return NextResponse.json({ error: "Fatal exception: " + err.message }, { status: 500 });
   }
 }

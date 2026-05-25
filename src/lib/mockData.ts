@@ -191,20 +191,3 @@ export const MOCK_REPOS: RepoItem[] = [
     status: "fresh",
   },
 ];
-
-export const MOCK_COMMIT_ACTIVITY = [
-  { day: "Mon", commits: 25, additions: 1400, deletions: 250 },
-  { day: "Tue", commits: 38, additions: 2900, deletions: 120 },
-  { day: "Wed", commits: 15, additions: 800, deletions: 50 },
-  { day: "Thu", commits: 42, additions: 3500, deletions: 600 },
-  { day: "Fri", commits: 30, additions: 1800, deletions: 400 },
-  { day: "Sat", commits: 8, additions: 400, deletions: 20 },
-  { day: "Sun", commits: 12, additions: 600, deletions: 80 },
-];
-
-export const MOCK_LANGUAGES = [
-  { name: "Swift", value: 38, color: "#F05138" },
-  { name: "TypeScript", value: 28, color: "#3178C6" },
-  { name: "Go", value: 18, color: "#00ADD8" },
-  { name: "Rust", value: 16, color: "#DEA584" },
-];
